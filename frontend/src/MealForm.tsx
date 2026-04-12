@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FormGroup, InputGroup, NumericInput, Button, HTMLSelect } from '@blueprintjs/core';
 import { FormInputs } from './types';
 
 interface Props {
@@ -6,7 +7,7 @@ interface Props {
 }
 
 const MealForm = ({ onSubmit }: Props) => {
-  const [dailyCalories, setDailyCalories] = useState(1600); //  have a variable called dailyCalories, its starting value is 1600, and setDailyCalories is the function I call to change it.
+  const [dailyCalories, setDailyCalories] = useState(1600);
   const [dailyProtein, setDailyProtein] = useState(60);
   const [servings, setServings] = useState(4);
   const [proteins, setProteins] = useState('chicken');
@@ -25,39 +26,88 @@ const MealForm = ({ onSubmit }: Props) => {
   };
 
   return (
-    <div>
-      <label>Daily Calories</label>
-      <input type="number" value={dailyCalories} onChange={e => setDailyCalories(Number(e.target.value))} 
-      // So the flow is: user types → onChange fires → state updates → input re-renders with new value. 
-      />
+    <div style={{ maxWidth: 480, margin: '40px auto', padding: '0 20px' }}>
+      <h2 style={{ marginBottom: 24 }}>PrepScale</h2>
 
-      <label>Daily Protein (g)</label>
-      <input type="number" value={dailyProtein} onChange={e => setDailyProtein(Number(e.target.value))} />
+      <FormGroup label="Daily Calories">
+        <NumericInput
+          fill
+          value={dailyCalories}
+          onValueChange={val => setDailyCalories(val)}
+          min={0}
+        />
+      </FormGroup>
 
-      <label>Servings to Prep</label>
-      <input type="number" value={servings} onChange={e => setServings(Number(e.target.value))} />
+      <FormGroup label="Daily Protein (g)">
+        <NumericInput
+          fill
+          value={dailyProtein}
+          onValueChange={val => setDailyProtein(val)}
+          min={0}
+        />
+      </FormGroup>
 
-      <label>Proteins (comma separated)</label>
-      <input type="text" value={proteins} onChange={e => setProteins(e.target.value)} />
+      <FormGroup label="Servings to Prep">
+        <NumericInput
+          fill
+          value={servings}
+          onValueChange={val => setServings(val)}
+          min={1}
+        />
+      </FormGroup>
 
-      <label>Carb</label>
-      <select value={carbType} onChange={e => setCarbType(e.target.value)}>
-        <option value="rice">Rice</option>
-        <option value="pasta">Pasta</option>
-        <option value="roti">Roti</option>
-        <option value="wraps">Wraps</option>
-        <option value="bread">Bread</option>
-      </select>
+      <FormGroup label="Proteins (comma separated)" helperText="e.g. chicken, egg">
+        <InputGroup
+          value={proteins}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProteins(e.target.value)}
+        />
 
-      <label>Veggie</label>
-      <select value={veggieType} onChange={e => setVeggieType(e.target.value)}>
-        <option value="mixed_veg">Mixed Veg</option>
-        <option value="broccoli">Broccoli</option>
-        <option value="spinach">Spinach</option>
-        <option value="none">None</option>
-      </select>
+        {/* <HTMLSelect
+          fill
+          value={carbType}
+          onChange={e => setCarbType(e.target.value)}
+          options={[
+            { value: 'rice', label: 'Rice' },
+            { value: 'pasta', label: 'Pasta' },
+            { value: 'roti', label: 'Roti' },
+            { value: 'wraps', label: 'Wraps' },
+            { value: 'bread', label: 'Bread' },
+          ]}
+        /> */}
+      </FormGroup>
 
-      <button onClick={handleSubmit}>Calculate →</button>
+      <FormGroup label="Carb">
+        <HTMLSelect
+          fill
+          value={carbType}
+          onChange={e => setCarbType(e.target.value)}
+          options={[
+            { value: 'rice', label: 'Rice' },
+            { value: 'pasta', label: 'Pasta' },
+            { value: 'roti', label: 'Roti' },
+            { value: 'wraps', label: 'Wraps' },
+            { value: 'bread', label: 'Bread' },
+          ]}
+        />
+      </FormGroup>
+
+      <FormGroup label="Veggie">
+        <HTMLSelect
+          fill
+          value={veggieType}
+          onChange={e => setVeggieType(e.target.value)}
+          options={[
+            { value: 'mixed_veg', label: 'Mixed Veg' },
+            { value: 'broccoli', label: 'Broccoli' },
+            { value: 'spinach', label: 'Spinach' },
+            { value: 'none', label: 'None' },
+          ]}
+        />
+      </FormGroup>
+
+      <Button intent="primary" fill onClick={handleSubmit}>
+        Calculate
+      </Button>
     </div>
   );
 };
