@@ -30,21 +30,15 @@ CHEAT_SHEET = {
 }
 
 
-# @app.route('/api/calculate', methods=['POST'])  # New endpoint
-# def calculate():
-#     data = request.get_json()
-#     result = calculate_prep(data)
-#     return jsonify(result)
+@app.route('/api/calculate', methods=['POST']) 
+def calculate():
+    data = request.get_json()
+    result = calculate_prep(data)
+    return jsonify(result)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        data = request.json
-        result = calculate_prep(data)
-        return jsonify(result)
-    
-    # return render_template_string(HTML_TEMPLATE)
-    return jsonify({"test": 1})
+    return jsonify({"status": "healthy"})
 
 
 def calculate_prep(data):
