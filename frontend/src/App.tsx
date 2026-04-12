@@ -1,25 +1,28 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
+import MealForm from './MealForm';
+import Results from './Results';
+import { FormInputs, CalcResult } from './types';
 
 function App() {
+  const [result, setResult] = useState<CalcResult | null>(null);
 
-  useEffect(() => {
-    fetch('http://127.0.0.1:5001', {
+  const handleSubmit = async (inputs: FormInputs) => {
+    const response = await fetch('http://127.0.0.1:5001/api/calculate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        proteins: ['chicken', 'egg'],
-        carbType: 'rice',
-        veggieType: 'broccoli',
-        servings: 3,
-        dailyCalories: 1600,
-        dailyProtein: 60
-      })
-    })
-      .then(res => res.json())
-      .then(data => console.log(data));   // ← open browser console to see this
-  }, []);
+      body: JSON.stringify(inputs)
+    });
+    const data: CalcResult = await response.json();
+    setResult(data);
+  };
 
-  return <div>Hello</div>;
+  return (
+    <div>
+      <h1>PrepScale</h1>
+      <MealForm onSubmit={handleSubmit} />
+      {result && <Results data={result} />}
+    </div>
+  );
 }
 
 export default App;
