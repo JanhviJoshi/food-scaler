@@ -49,7 +49,7 @@ def calculate_prep(data):
     proteins = data.get('proteins', ['chicken'])
     carb_type = data['carbType']
     veggie_type = data.get('veggieType', 'none')
-
+    veggie_display_name = veggie_type.replace('_', ' ')
 
     # Meal split
     breakfast_protein = 20
@@ -57,21 +57,20 @@ def calculate_prep(data):
     lunch_dinner_protein = (daily_protein - breakfast_protein) / 2
     lunch_dinner_calories = (daily_calories - breakfast_calories) / 2
 
+    print(lunch_dinner_protein)
     # Protein share logic
     if set(proteins) == {'chicken', 'egg'}:
         protein_shares = {'chicken': 0.7, 'egg': 0.3}
     else:
-    # Single protein — gets 100%
         protein_shares = {p: 1.0 for p in proteins}
 
     protein_breakdown = {}
     protein_totals = {}
     total_protein_cals = 0
-    total_protein_grams_raw = 0
 
     for p_type in proteins:
         protein = CHEAT_SHEET['proteins'][p_type]
-        target = lunch_dinner_protein * protein_shares[p_type]  
+        target = lunch_dinner_protein * protein_shares[p_type]
         scale = target / protein['protein_grams']
 
         scaled_cals = protein['calories'] * scale
@@ -79,7 +78,6 @@ def calculate_prep(data):
         scaled_protein = protein['protein_grams'] * scale
 
         total_protein_cals += scaled_cals
-        total_protein_grams_raw += scaled_raw
 
         protein_breakdown[p_type] = f"{round(scaled_cals)} kcal, {round(scaled_protein)}g protein"
         protein_totals[p_type] = round(scaled_raw * servings)
@@ -87,65 +85,71 @@ def calculate_prep(data):
     carb = CHEAT_SHEET['carbs'][carb_type]
     veggie = CHEAT_SHEET['veggies'][veggie_type]
 
-    carb_cals = carb['calories']
-    veggie_cals = veggie['calories']
-    subtotal_cals = total_protein_cals + carb_cals + veggie_cals
+    # Calorie distribution — protein first, then veggies, carbs fill the rest
+    remaining_cals = lunch_dinner_calories - total_protein_cals
+    veggie_cals = remaining_cals * 0.20
+    carb_cals = remaining_cals - veggie_cals
+    subtotal_cals = total_protein_cals + veggie_cals + carb_cals
 
-    gap_cals = max(0, lunch_dinner_calories - subtotal_cals)
-    oil_grams_per_meal = round(gap_cals / 9)
-    oil_grams_total = oil_grams_per_meal * servings
+    # Calculate grams from calorie targets
+    if veggie_type == 'none':
+        total_veggie_grams = 0
+        carb_cals = remaining_cals  # give all remaining to carbs if no veggie
+    else:
+        total_veggie_grams = round(veggie_cals * (veggie['raw_grams'] / veggie['calories']) * servings)
 
     if 'raw_grams' in carb:
-        total_carb_grams = round(carb['raw_grams'] * servings)
+        total_carb_grams = round(carb_cals * (carb['raw_grams'] / carb['calories']) * servings)
         carb_display = f"{total_carb_grams}g dry"
     else:
-        total_carb_grams = carb['count'] * servings
+        # count-based carbs (roti, wraps, bread) — find closest count
+        cals_per_unit = carb['calories'] / carb['count']
+        units_per_meal = round(carb_cals / cals_per_unit)
+        total_carb_grams = units_per_meal * servings
         carb_display = f"{total_carb_grams} pieces"
 
-    total_veggie_grams = round(veggie['raw_grams'] * servings)
-
+    # Shopping list
     shopping_list = {}
     for p_type, total_grams in protein_totals.items():
-        if p_type == 'egg':
-            egg_count = round(total_grams / CHEAT_SHEET['proteins']['egg']['raw_grams'])
-            shopping_list['egg'] = f"{egg_count} eggs"
+        if CHEAT_SHEET['proteins'][p_type].get('unit') == 'count':
+            egg_count = round(total_grams / CHEAT_SHEET['proteins'][p_type]['raw_grams'])
+            shopping_list[p_type] = f"{egg_count} eggs"
         else:
             shopping_list[f"{p_type} (raw)"] = f"{total_grams}g"
-            shopping_list.update({
-            carb_type: carb_display,
-            veggie_type: f"{total_veggie_grams}g",
-            # 'oil': f"{round(oil_grams_total / 14)} tbsp total"
-        })
 
-    # Portion weight: proteins shrink ~25% (skip for no-cook items), carbs expand
+    shopping_list.update({
+        carb_type: carb_display,
+        veggie_display_name: f"{total_veggie_grams}g",
+    })
+
+    # Portion weight
     no_cook_proteins = {'egg', 'cottage_cheese'}
     cooked_protein_grams = sum(
-        (protein_totals[p] * (1.0 if p in no_cook_proteins else 0.75))
+        protein_totals[p] * (1.0 if p in no_cook_proteins else 0.75)
         for p in proteins
     )
     portion_weight = round(
-        (cooked_protein_grams + total_carb_grams * 2.5 + total_veggie_grams + oil_grams_total) / servings
+        (cooked_protein_grams + total_carb_grams * 2.5 + total_veggie_grams) / servings
     )
 
+    # Per box
     per_box = {}
-
     for p_type in proteins:
         raw_per_serving = protein_totals[p_type] / servings
         yield_factor = 1.0 if p_type in no_cook_proteins else 0.75
-        if p_type == 'egg':
-            egg_count_per_box = round(raw_per_serving / CHEAT_SHEET['proteins']['egg']['raw_grams'])
+        if CHEAT_SHEET['proteins'][p_type].get('unit') == 'count':
+            count_per_box = round(raw_per_serving / CHEAT_SHEET['proteins'][p_type]['raw_grams'])
             cooked_grams = round(raw_per_serving * yield_factor)
-            per_box['egg'] = f"{egg_count_per_box} eggs ({cooked_grams}g)"
+            per_box[p_type] = f"{count_per_box} eggs ({cooked_grams}g)"
         else:
             per_box[p_type] = f"{round(raw_per_serving * yield_factor)}g cooked"
 
     if 'raw_grams' in carb:
-        per_box[carb_type] = f"{round(carb['raw_grams'] * 2.5)}g cooked"  # dry expands
+        per_box[carb_type] = f"{round((total_carb_grams / servings) * 2.5)}g cooked"
     else:
-        per_box[carb_type] = f"{carb['count']} pieces"
+        per_box[carb_type] = f"{round(total_carb_grams / servings)} pieces"
 
-    per_box[veggie_type] = f"{veggie['raw_grams']}g"
-    # per_box['oil'] = f"{oil_grams_per_meal}g (~{round(oil_grams_per_meal / 14)} tbsp)"
+    per_box[veggie_display_name] = f"{round(total_veggie_grams / servings)}g"
 
     return {
         'daily_split': {
@@ -157,11 +161,10 @@ def calculate_prep(data):
             'targetProtein': round(lunch_dinner_protein),
             'breakdown': {
                 **protein_breakdown,
-                carb_type: f"{carb_cals} kcal",
-                veggie_type: f"{veggie_cals} kcal ({veggie['raw_grams']}g)",
+                carb_type: f"{round(carb_cals)} kcal",
+                veggie_display_name: f"{round(veggie_cals)} kcal ({round(total_veggie_grams / servings)}g)",
                 'subtotal': f"{round(subtotal_cals)} kcal",
-                'oilRecommended': f"{oil_grams_per_meal}g (~{round(oil_grams_per_meal / 14)} tbsp)",
-                'total': f"{round(subtotal_cals + oil_grams_per_meal * 9)} kcal"
+                'total': f"{round(subtotal_cals)} kcal"
             }
         },
         'shopping_list': shopping_list,
