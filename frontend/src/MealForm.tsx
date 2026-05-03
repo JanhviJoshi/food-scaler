@@ -21,8 +21,8 @@ const PROTEIN_LABELS: Record<string, string> = {
 };
 
 const MealForm = ({ onSubmit }: Props) => {
-  const [dailyCalories, setDailyCalories] = useState(1600);
-  const [dailyProtein, setDailyProtein] = useState(60);
+  const [dailyCalories, setDailyCalories] = useState(1400);
+  const [dailyProtein, setDailyProtein] = useState(80);
   const [servings, setServings] = useState(4);
   const [selectedProteins, setSelectedProteins] = useState<string[]>(['chicken']);
   const [carbType, setCarbType] = useState('rice');
