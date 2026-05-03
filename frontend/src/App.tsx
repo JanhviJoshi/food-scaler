@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Spinner } from '@blueprintjs/core';
-import MealForm from './MealForm';
-import Results from './Results';
+import MealForm from '../../frontend/src/MealForm';
+import Results from '../../frontend/src/Results';
 import { FormInputs, CalcResult } from './types';
 
 function App() {
@@ -25,7 +24,7 @@ function App() {
       <MealForm onSubmit={handleSubmit} />
       {loading && (
         <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <Spinner />
+         <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mt-6" />
         </div>
       )}
       {!loading && result && <Results data={result} />}

@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { FormGroup, NumericInput, HTMLSelect, Button } from '@blueprintjs/core';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormInputs } from './types';
 
 interface Props {
@@ -16,19 +19,6 @@ const PROTEIN_LABELS: Record<string, string> = {
   cottage_cheese: 'Cottage Cheese',
   chickpeas: 'Chickpeas',
 };
-
-const chipStyle = (active: boolean): React.CSSProperties => ({
-  padding: '5px 12px',
-  borderRadius: 99,
-  fontSize: 13,
-  fontWeight: 500,
-  cursor: 'pointer',
-  border: active ? '1.5px solid #97C459' : '1px solid #d0d0d0',
-  background: active ? '#EAF3DE' : 'transparent',
-  color: active ? '#3B6D11' : '#666',
-  transition: 'all 0.15s ease',
-  userSelect: 'none',
-});
 
 const MealForm = ({ onSubmit }: Props) => {
   const [dailyCalories, setDailyCalories] = useState(1600);
@@ -58,73 +48,114 @@ const MealForm = ({ onSubmit }: Props) => {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '36px auto', padding: '0 20px' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28, paddingBottom: 16, borderBottom: '0.5px solid #e0e0e0' }}>
-        <div style={{ width: 36, height: 36, borderRadius: 8, background: '#EAF3DE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🥗</div>
+    <div className="max-w-lg mx-auto px-4 py-8 space-y-4">
+      <div className="flex items-center gap-3 pb-4 border-b">
+        <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center text-lg">🥗</div>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 500 }}>PrepScale</div>
-          <div style={{ fontSize: 13, color: '#888' }}>meal prep calculator</div>
+          <div className="font-medium">PrepScale</div>
+          <div className="text-sm text-slate-500">meal prep calculator</div>
         </div>
       </div>
 
-      <div style={{ background: 'white', border: '0.5px solid #e8e8e8', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>Targets</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-          <FormGroup label="Daily calories" style={{ margin: 0 }}>
-            <NumericInput fill value={dailyCalories} onValueChange={val => setDailyCalories(val)} min={0} />
-          </FormGroup>
-          <FormGroup label="Daily protein (g)" style={{ margin: 0 }}>
-            <NumericInput fill value={dailyProtein} onValueChange={val => setDailyProtein(val)} min={0} />
-          </FormGroup>
-        </div>
-        <FormGroup label="Servings to prep" style={{ margin: 0 }}>
-          <NumericInput fill value={servings} onValueChange={val => setServings(val)} min={1} />
-        </FormGroup>
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Targets</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Daily calories</label>
+              <Input
+                type="number"
+                value={dailyCalories}
+                onChange={e => setDailyCalories(Number(e.target.value))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Daily protein (g)</label>
+              <Input
+                type="number"
+                value={dailyProtein}
+                onChange={e => setDailyProtein(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-slate-500">Servings to prep</label>
+            <Input
+              type="number"
+              value={servings}
+              onChange={e => setServings(Number(e.target.value))}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      <div style={{ background: 'white', border: '0.5px solid #e8e8e8', borderRadius: 12, padding: '16px 20px', marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>Protein</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {PROTEINS.map(p => (
-            <span
-              key={p}
-              style={chipStyle(selectedProteins.includes(p))}
-              onClick={() => toggleProtein(p)}
-            >
-              {PROTEIN_LABELS[p]}
-            </span>
-          ))}
-        </div>
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Protein</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {PROTEINS.map(p => (
+              <span
+                key={p}
+                onClick={() => toggleProtein(p)}
+                className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all select-none border ${
+                  selectedProteins.includes(p)
+                    ? 'bg-green-50 text-green-700 border-green-400'
+                    : 'bg-transparent text-slate-500 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                {PROTEIN_LABELS[p]}
+              </span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-      <div style={{ background: 'white', border: '0.5px solid #e8e8e8', borderRadius: 12, padding: '16px 20px', marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 500, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14 }}>Carb & Veggie</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <FormGroup label="Carb" style={{ margin: 0 }}>
-            <HTMLSelect fill value={carbType} onChange={e => setCarbType(e.target.value)} options={[
-              { value: 'rice', label: 'Rice' },
-              { value: 'pasta', label: 'Pasta' },
-              { value: 'roti', label: 'Roti' },
-              { value: 'wraps', label: 'Wraps' },
-              { value: 'bread', label: 'Bread' },
-            ]} />
-          </FormGroup>
-          <FormGroup label="Veggie" style={{ margin: 0 }}>
-            <HTMLSelect fill value={veggieType} onChange={e => setVeggieType(e.target.value)} options={[
-              { value: 'mixed_veg', label: 'Mixed Veg' },
-              { value: 'broccoli', label: 'Broccoli' },
-              { value: 'spinach', label: 'Spinach' },
-              { value: 'none', label: 'None' },
-            ]} />
-          </FormGroup>
-        </div>
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Carb & Veggie</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Carb</label>
+              <Select value={carbType} onValueChange={setCarbType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rice">Rice</SelectItem>
+                  <SelectItem value="pasta">Pasta</SelectItem>
+                  <SelectItem value="roti">Roti</SelectItem>
+                  <SelectItem value="wraps">Wraps</SelectItem>
+                  <SelectItem value="bread">Bread</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-500">Veggie</label>
+              <Select value={veggieType} onValueChange={setVeggieType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mixed_veg">Mixed Veg</SelectItem>
+                  <SelectItem value="broccoli">Broccoli</SelectItem>
+                  <SelectItem value="spinach">Spinach</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <Button intent="success" fill large onClick={handleSubmit}>
+      <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleSubmit}>
         Calculate →
       </Button>
-
     </div>
   );
 };

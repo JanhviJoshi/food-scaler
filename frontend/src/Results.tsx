@@ -1,46 +1,11 @@
 import { useState } from 'react';
-import { Button } from '@blueprintjs/core';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalcResult } from './types';
 
 interface Props {
   data: CalcResult;
 }
-
-const card: React.CSSProperties = {
-  background: 'white',
-  border: '0.5px solid #e8e8e8',
-  borderRadius: 12,
-  padding: '16px 20px',
-  marginBottom: 12,
-};
-
-const sectionLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 500,
-  color: '#999',
-  textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  marginBottom: 14,
-};
-
-const row: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '6px 0',
-  borderBottom: '0.5px solid #f0f0f0',
-};
-
-const label: React.CSSProperties = {
-  fontSize: 13,
-  color: '#555',
-};
-
-const value: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 500,
-  color: '#222',
-};
 
 const Results = ({ data }: Props) => {
   const [copied, setCopied] = useState(false);
@@ -57,76 +22,87 @@ const Results = ({ data }: Props) => {
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '0 auto 40px', padding: '0 20px' }}>
+    <div className="max-w-lg mx-auto px-4 pb-12 space-y-4">
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-        <div style={{ background: '#f7f7f5', borderRadius: 8, padding: '12px 14px' }}>
-          <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>calories target per meal</div>
-          <div style={{ fontSize: 22, fontWeight: 500 }}>{data.per_meal.targetCalories} <span style={{ fontSize: 13, color: '#999', fontWeight: 400 }}>kcal</span></div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-slate-50 rounded-lg p-4">
+          <div className="text-xs text-slate-400 mb-1">per meal target</div>
+          <div className="text-2xl font-medium">{data.per_meal.targetCalories} <span className="text-sm text-slate-400 font-normal">kcal</span></div>
         </div>
-        <div style={{ background: '#f7f7f5', borderRadius: 8, padding: '12px 14px' }}>
-          <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>protein per meal</div>
-          <div style={{ fontSize: 22, fontWeight: 500 }}>{data.per_meal.targetProtein} <span style={{ fontSize: 13, color: '#999', fontWeight: 400 }}>g</span></div>
+        <div className="bg-slate-50 rounded-lg p-4">
+          <div className="text-xs text-slate-400 mb-1">protein per meal</div>
+          <div className="text-2xl font-medium">{data.per_meal.targetProtein} <span className="text-sm text-slate-400 font-normal">g</span></div>
         </div>
       </div>
 
-      <div style={card}>
-        <div style={sectionLabel}>Breakdown Per Meal</div>
-        {Object.entries(data.per_meal.breakdown).map(([key, val]) => (
-          <div key={key} style={row}>
-            <span style={label}>{key}</span>
-            {key === 'total' ? (
-      <span style={{ ...value, background: '#EAF3DE', color: '#3B6D11', padding: '2px 10px', borderRadius: 99, fontSize: 12 }}>{val}</span>
-    ) : (
-            <span style={value}>{val}</span>
-    )}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Daily Split</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex justify-between py-1 border-b border-slate-50">
+            <span className="text-sm text-slate-500">Breakfast</span>
+            <span className="text-sm font-medium">{data.daily_split.breakfast}</span>
           </div>
-        ))}
-      </div>
-
-      <div style={card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div style={sectionLabel as React.CSSProperties}>Shopping list — {data.servings} servings</div>
-          <Button
-            small
-            minimal
-            intent={copied ? 'success' : 'none'}
-            onClick={handleCopy}
-          >
-            {copied ? '✓ Copied' : 'Copy'}
-          </Button>
-        </div>
-        <pre style={{ fontFamily: 'inherit', fontSize: 13, lineHeight: 2, margin: 0, color: '#333', whiteSpace: 'pre-wrap' }}>
-          {shoppingText}
-        </pre>
-      </div>
-
-      <div style={card}>
-        <div style={sectionLabel}>Per box</div>
-        {Object.entries(data.per_box).map(([key, val]) => (
-          <div key={key} style={row}>
-            <span style={label}>{key}</span>
-            <span style={value}>{val}</span>
+          <div className="flex justify-between py-1">
+            <span className="text-sm text-slate-500">Lunch / Dinner</span>
+            <span className="text-sm font-medium">{data.daily_split.lunch_dinner}</span>
           </div>
-        ))}
-        <div style={{ ...row, borderBottom: 'none', paddingTop: 10 }}>
-          <span style={{ ...label, fontWeight: 500, color: '#222' }}>Portion weight</span>
-          <span style={{ ...value, background: '#EAF3DE', color: '#3B6D11', padding: '2px 10px', borderRadius: 99, fontSize: 12 }}>{data.portion_weight}</span>
-        </div>
-      </div>
+          <p className="text-xs text-slate-300 pt-1">{data.breakfast_note}</p>
+        </CardContent>
+      </Card>
 
-      <div style={card}>
-        <div style={sectionLabel}>Daily split</div>
-        <div style={row}>
-          <span style={label}>Breakfast</span>
-          <span style={value}>{data.daily_split.breakfast}</span>
-        </div>
-        <div style={{ ...row, borderBottom: 'none' }}>
-          <span style={label}>Lunch / Dinner</span>
-          <span style={value}>{data.daily_split.lunch_dinner}</span>
-        </div>
-        <div style={{ fontSize: 12, color: '#aaa', marginTop: 10 }}>{data.breakfast_note}</div>
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {Object.entries(data.per_meal.breakdown).map(([key, val]) => (
+            <div key={key} className="flex justify-between py-1.5 border-b border-slate-50 last:border-0">
+              <span className="text-sm text-slate-500">{key}</span>
+              {key === 'total' ? (
+                <span className="text-xs font-medium bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{val}</span>
+              ) : (
+                <span className="text-sm font-medium">{val}</span>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Shopping List — {data.servings} servings</CardTitle>
+            <Button variant="ghost" size="sm" onClick={handleCopy} className="text-xs h-7">
+              {copied ? '✓ Copied' : 'Copy'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-sm text-slate-700 leading-7 whitespace-pre-wrap font-sans">
+            {shoppingText}
+          </pre>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xs uppercase tracking-wider text-slate-400 font-medium">Per Box</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          {Object.entries(data.per_box).map(([key, val]) => (
+            <div key={key} className="flex justify-between py-1.5 border-b border-slate-50 last:border-0">
+              <span className="text-sm text-slate-500">{key}</span>
+              <span className="text-sm font-medium">{val}</span>
+            </div>
+          ))}
+          <div className="flex justify-between pt-3">
+            <span className="text-sm font-medium">Portion Weight</span>
+            <span className="text-xs font-medium bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{data.portion_weight}</span>
+          </div>
+        </CardContent>
+      </Card>
 
     </div>
   );
